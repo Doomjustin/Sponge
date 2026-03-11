@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 
-project(CppTemplate
+project(Sponge
     VERSION 0.0.1
     LANGUAGES C CXX
 )
@@ -13,6 +13,8 @@ cmake_dependent_option(${PROJECT_NAME}_BUILD_TESTS
     "BUILD_TESTING" OFF
 )
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
@@ -26,5 +28,10 @@ include(CopyResources)
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(doctest CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED COMPONENTS System)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(tomlplusplus CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
+find_package(argparse CONFIG REQUIRED)
 
 add_subdirectory(src)

@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Generate: C++ (手动输入: 任意路径)",
+            "type": "shell",
+            "command": "bash",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": [
+                "${workspaceFolder}/scripts/scaffold_cpp.sh",
+                "${input:fileBaseManual}",
+                "${input:targetDirManual}",
+                "${workspaceFolder}",
+                "${input:namespaceManual}"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true,
+                "showReuseMessage": false,
+                "echo": false
+            },
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "fileBaseManual",
+            "type": "promptString",
+            "description": "手动模式: 输入文件基名（例如 redis_bitmap）"
+        },
+        {
+            "id": "targetDirManual",
+            "type": "promptString",
+            "description": "手动模式: 输入生成目录（支持绝对路径）",
+        },
+        {
+            "id": "namespaceManual",
+            "type": "promptString",
+            "description": "手动模式: 输入命名空间（留空按目录自动推导）"
+        }
+    ]
+}

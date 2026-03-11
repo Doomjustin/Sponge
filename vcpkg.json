@@ -2,7 +2,12 @@
     "dependencies": [
         "fmt",
         "spdlog",
-        "doctest"
+        "doctest",
+        "boost",
+        "nlohmann-json",
+        "tomlplusplus",
+        "magic-enum",
+        "argparse"
     ],
     "name": "xin",
     "version": "0.0.1",
