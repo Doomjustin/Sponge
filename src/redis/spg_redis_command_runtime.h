@@ -15,31 +15,32 @@ public:
     using Index = std::size_t;
     using IOContext = boost::asio::io_context;
     using WorkGuard = boost::asio::executor_work_guard<IOContext::executor_type>;
+    static constexpr std::size_t db_count = 16;
 
     CommandRuntime();
 
     auto get_channel(Index index) -> RequestChannel& { return shards_[shard_index(index)].request_channel; }
 
 private:
+    static constexpr std::size_t shard_count = 4;
+    static constexpr std::size_t local_db_count = db_count / shard_count;
+
     struct Shard {
         IOContext context{ 1 };
         RequestChannel request_channel{ context, 128 };
         WorkGuard work_guard{ context.get_executor() };
 
         std::jthread thread;
-        std::array<Database, 4> database;
+        std::array<Database, local_db_count> database;
 
         auto do_command() -> boost::asio::awaitable<void>;
     };
-
-    static constexpr int db_count = 16;
-    static constexpr int shard_count = 4;
 
     std::array<Shard, shard_count> shards_;
 
     static auto shard_index(Index index) -> std::size_t { return index % shard_count; }
 
-    static auto local_db_index(Index index) -> std::size_t { return index % db_count; }
+    static auto local_db_index(Index index) -> std::size_t { return index / shard_count; }
 };
 
 } // namespace sponge::redis

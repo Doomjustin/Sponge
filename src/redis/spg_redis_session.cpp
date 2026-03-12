@@ -124,6 +124,9 @@ auto Session::select(const Arguments& args) -> Response
     if (!select_index)
         return "-ERR invalid argument for 'select' command\r\n";
 
+    if (*select_index >= CommandRuntime::db_count)
+        return "-ERR DB index is out of range\r\n";
+
     index_ = *select_index;
     return "+OK\r\n";
 }
