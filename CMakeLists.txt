@@ -28,10 +28,15 @@ include(CopyResources)
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(doctest CONFIG REQUIRED)
-find_package(Boost CONFIG REQUIRED COMPONENTS System)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(tomlplusplus CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 find_package(argparse CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED 
+    COMPONENTS 
+        system 
+        asio 
+        beast
+)
 
 add_subdirectory(src)

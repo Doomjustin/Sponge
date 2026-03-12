@@ -35,7 +35,7 @@ IncludeCategories:
     CaseSensitive: false
     
   # C++ 标准库头文件
-  - Regex: '^<(algorithm|array|atomic|bitset|cstdlib|cerrno|cassert|cstddef|cstdint|charconv|chrono|codecvt|compare|complex|concepts|condition_variable|coroutine|deque|exception|expected|execution|filesystem|format|forward_list|fstream|functional|future|initializer_list|iomanip|ios|iosfwd|iostream|istream|iterator|limits|list|locale|map|memory|memory_resource|mutex|new|numbers|numeric|optional|ostream|queue|random|ranges|ratio|regex|scoped_allocator|set|shared_mutex|source_location|span|sstream|stack|stdexcept|stop_token|streambuf|string|string_view|strstream|syncstream|system_error|thread|tuple|type_traits|typeindex|typeinfo|unordered_map|unordered_set|utility|valarray|variant|vector|version)>'
+  - Regex: '^<(print|algorithm|array|atomic|bitset|cstdlib|cerrno|cassert|cstddef|cstdint|charconv|chrono|codecvt|compare|complex|concepts|condition_variable|coroutine|deque|exception|expected|execution|filesystem|format|forward_list|fstream|functional|future|initializer_list|iomanip|ios|iosfwd|iostream|istream|iterator|limits|list|locale|map|memory|memory_resource|mutex|new|numbers|numeric|optional|ostream|queue|random|ranges|ratio|regex|scoped_allocator|set|shared_mutex|source_location|span|sstream|stack|stdexcept|stop_token|streambuf|string|string_view|strstream|syncstream|system_error|thread|tuple|type_traits|typeindex|typeinfo|unordered_map|unordered_set|utility|valarray|variant|vector|version)>'
     Priority: 5
     CaseSensitive: false
   
@@ -45,7 +45,7 @@ IncludeCategories:
     CaseSensitive: false
   
   # C++ C 兼容头文件
-  - Regex: '^<c(cstdlib|cerrno|ctype|cstring|cassert|cstddef|cstdint|cinttypes|climits|clocale|cmath|complex|csignal|csetjmp|csignal|cstdalign|cstdarg|cstdbool|cstddef|cstdint|cstdio|ctgmath|ctime|cwchar|cwctype)>'
+  - Regex: '^<c(stdlib|errno|type|string|assert|stddef|stdint|inttypes|limits|locale|math|complex|signal|setjmp|signal|stdalign|stdarg|stdbool|stddef|stdint|stdio|tgmath|time|wchar|wctype)>'
     Priority: 5
     CaseSensitive: false
   
@@ -56,7 +56,7 @@ IncludeCategories:
 
   # 其他第三方库（尖括号）- 与知名第三方库同优先级
   - Regex: '^<.*>'
-    Priority: 2
+    Priority: 1
     CaseSensitive: false
 
 # 主头文件识别模式（支持 xxx.cpp 与 xxx.test.cpp）

@@ -1,0 +1,48 @@
+#ifndef SPONGE_REDIS_RESP_H
+#define SPONGE_REDIS_RESP_H
+
+#include <cstdint>
+#include <expected>
+#include <span>
+#include <string>
+#include <vector>
+
+namespace sponge::redis {
+
+enum class Status : std::uint8_t {
+    Waiting, // 数据不够，等待更多数据
+    Error    // 解析错误
+};
+
+// 这是一个 RESP 协议解析器，设计为状态机，支持增量解析。
+// 需要手动重置状态以解析下一条命令。
+class RESPParser {
+public:
+    using arguments = std::vector<std::string>;
+
+    auto parse(std::span<const char>& buf) -> std::expected<arguments, Status>;
+
+    void reset();
+
+private:
+    enum class State : std::uint8_t { Start, ReadingArraySize, ReadingBulkPrefix, ReadingBulkSize, ReadingBulkData };
+
+    State state_ = State::Start;
+    int expected_args_count_ = 0;
+    int current_arg_length_ = 0;
+    arguments args_;
+
+    auto read_start(std::span<const char>& buf) -> std::expected<void, Status>;
+
+    auto read_array_size(std::span<const char>& buf) -> std::expected<void, Status>;
+
+    auto read_bulk_prefix(std::span<const char>& buf) -> std::expected<void, Status>;
+
+    auto read_bulk_size(std::span<const char>& buf) -> std::expected<void, Status>;
+
+    auto parse_reading_bulk_data(std::span<const char>& buf) -> std::expected<void, Status>;
+};
+
+} // namespace sponge::redis
+
+#endif // SPONGE_REDIS_RESP_H

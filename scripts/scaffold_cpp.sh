@@ -69,10 +69,15 @@ for f in "$h" "$cpp" "$test"; do
 done
 
 guard_name=$(echo "$name" | tr "[:lower:]" "[:upper:]")
-if [[ "$guard_name" == SPONGE_* ]]; then
-  guard="${guard_name}_H"
+guard_core="$guard_name"
+if [[ "$guard_core" == SPG_* ]]; then
+  guard_core="${guard_core#SPG_}"
+fi
+
+if [[ "$guard_core" == SPONGE_* ]]; then
+  guard="${guard_core}_H"
 else
-  guard="SPONGE_${guard_name}_H"
+  guard="SPONGE_${guard_core}_H"
 fi
 
 cat > "$h" <<EOF

@@ -1,0 +1,16 @@
+#ifndef SPONGE_BASE_CONFIG_H
+#define SPONGE_BASE_CONFIG_H
+
+#include <string_view>
+
+namespace spg::base {
+
+struct config {
+    config() = delete;
+
+    static constexpr std::string_view source_dir{ "/home/doom/code/Sponge" };
+};
+
+} // namespace spg::base
+
+#endif // SPONGE_BASE_CONFIG_H

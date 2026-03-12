@@ -1,0 +1,13 @@
+[common]
+worker_threads = 10
+io_threads = 4
+
+[network]
+port = 10443
+address = "0.0.0.0"
+timeout = 10
+
+[ssl]
+cert_path = "resource/server.crt"
+key_path = "resource/server.key"
+enable_tls_v13 = true
