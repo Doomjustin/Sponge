@@ -1,15 +1,16 @@
 #include "spg_redis_session.h"
 
+#include "spg_redis_channel.h"
 #include <spg_base_utility.h>
 #include <spg_redis_alias.h>
 #include <spg_redis_command_runtime.h>
 #include <spg_redis_commands.h>
 
+#include <boost/asio/buffer.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/system/detail/error_code.hpp>
 
 #include <cstring>
-#include <print>
 
 using namespace boost;
 
@@ -29,10 +30,8 @@ auto Session::run() -> boost::asio::awaitable<void>
     while (true) {
         auto socket_buffer = asio::buffer(buffer_.data() + write_idx_, buffer_.size() - write_idx_);
         auto [ec, n] = co_await socket_.async_read_some(socket_buffer, use_nothrow_awaitable);
-        if (ec) {
-            std::println("socket read closed.");
+        if (ec)
             co_return;
-        }
 
         auto total_len = write_idx_ + n;
         std::span<const char> buffer_view{ buffer_.data(), total_len };
@@ -42,42 +41,36 @@ auto Session::run() -> boost::asio::awaitable<void>
     }
 }
 
-auto Session::write_response(const Response& response) -> boost::asio::awaitable<bool>
+auto Session::write_batch_response(BatchReply batch_reply) -> boost::asio::awaitable<bool>
 {
-    auto [write_ec, writes] = co_await asio::async_write(socket_, asio::buffer(response), use_nothrow_awaitable);
-    if (write_ec) {
-        std::println("socket write error");
+    for (auto& reply : batch_reply)
+        write_context_.append_reply(reply);
+
+    auto [ec, _] = co_await asio::async_write(socket_, write_context_.buffers(), use_nothrow_awaitable);
+    write_context_.reset();
+    if (ec)
         co_return false;
-    }
 
     co_return true;
 }
 
-auto Session::handle_command(Request& request, ResponseChannel& response_channel, Arguments arguments)
-    -> boost::asio::awaitable<bool>
+auto Session::send_request(Request& request, ResponseChannel& response_channel) -> boost::asio::awaitable<bool>
 {
-    if (arguments[0] == "select")
-        co_return co_await write_response(select(arguments));
-
     request.index = index_;
-    request.arguments = std::move(arguments);
-
+    request.batch_commands = std::move(batch_commands_);
+    batch_commands_.clear();
     // 向DB线程发起请求
     auto& request_channel = runtime_.get_channel(index_);
     auto [send_ec] = co_await request_channel.async_send(ErrorCode{}, request, use_nothrow_awaitable);
-    if (send_ec) {
-        std::println("request channel send error");
+    if (send_ec)
         co_return false;
-    }
 
     // 拿到返回的结果
-    auto [recv_ec, response] = co_await response_channel.async_receive(use_nothrow_awaitable);
-    if (recv_ec) {
-        std::println("response channel receive error");
+    auto [recv_ec, batch_reply] = co_await response_channel.async_receive(use_nothrow_awaitable);
+    if (recv_ec)
         co_return false;
-    }
 
-    co_return co_await write_response(response);
+    co_return co_await write_batch_response(std::move(batch_reply));
 }
 
 auto Session::consume_buffer(Request& request, ResponseChannel& response_channel, std::span<const char> buffer_view)
@@ -94,10 +87,27 @@ auto Session::consume_buffer(Request& request, ResponseChannel& response_channel
             co_return false;
         }
 
-        if (!(co_await handle_command(request, response_channel, std::move(*res))))
-            co_return false;
+        // 如果是select命令，直接在Session线程处理，不发给DB线程
+        // 如果此时有积累的命令，先把它们发给DB线程处理，再切换DB
+        if ((*res)[0] == "select") {
+            if (!batch_commands_.empty()) {
+                if (!co_await send_request(request, response_channel))
+                    co_return false;
+            }
+
+            assert(batch_commands_.empty());
+            write_context_.append_reply(select(*res));
+        }
+        else {
+            batch_commands_.emplace_back(std::move(*res));
+        }
 
         parser_.reset();
+    }
+
+    if (!batch_commands_.empty()) {
+        if (!co_await send_request(request, response_channel))
+            co_return false;
     }
 
     write_idx_ = 0;
@@ -115,20 +125,20 @@ auto Session::preserve_remaining_buffer(std::span<const char> buffer_view) -> vo
     write_idx_ = buffer_view.size();
 }
 
-auto Session::select(const Arguments& args) -> Response
+auto Session::select(std::span<std::string> args) -> Reply
 {
     if (args.size() != 2)
-        return "-ERR wrong number of arguments for 'select' command\r\n";
+        return wrong_number_of_arguments_error("select");
 
     auto select_index = base::numeric_cast<Index>(args[1]);
     if (!select_index)
-        return "-ERR invalid argument for 'select' command\r\n";
+        return out_of_range;
 
     if (*select_index >= CommandRuntime::db_count)
-        return "-ERR DB index is out of range\r\n";
+        return out_of_range;
 
     index_ = *select_index;
-    return "+OK\r\n";
+    return ok;
 }
 
 } // namespace sponge::redis

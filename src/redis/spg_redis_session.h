@@ -1,8 +1,9 @@
 #ifndef SPONGE_REDIS_SESSION_H
 #define SPONGE_REDIS_SESSION_H
 
-#include "spg_redis_command_runtime.h"
+#include "spg_redis_reply.h"
 #include <spg_redis_channel.h>
+#include <spg_redis_command_runtime.h>
 #include <spg_redis_resp.h>
 
 #include <boost/asio.hpp>
@@ -10,13 +11,12 @@
 
 #include <array>
 #include <memory>
+#include <vector>
 
 namespace sponge::redis {
 
 class Session {
 public:
-    using Arguments = commands::Arguments;
-    using Response = commands::Response;
     using Index = std::size_t;
     using Size = std::size_t;
     using Socket = boost::asio::ip::tcp::socket;
@@ -36,18 +36,19 @@ private:
     Size write_idx_ = 0;
     Index index_ = 0;
     RESPParser parser_{};
+    std::vector<Arguments> batch_commands_;
+    WriteContext write_context_;
 
-    auto write_response(const Response& response) -> boost::asio::awaitable<bool>;
+    auto write_batch_response(BatchReply batch_reply) -> boost::asio::awaitable<bool>;
 
-    auto handle_command(Request& request, ResponseChannel& response_channel, Arguments arguments)
-        -> boost::asio::awaitable<bool>;
+    auto send_request(Request& request, ResponseChannel& response_channel) -> boost::asio::awaitable<bool>;
 
     auto consume_buffer(Request& request, ResponseChannel& response_channel, std::span<const char> buffer_view)
         -> boost::asio::awaitable<bool>;
 
     auto preserve_remaining_buffer(std::span<const char> buffer_view) -> void;
 
-    auto select(const Arguments& args) -> Response;
+    auto select(std::span<std::string> args) -> Reply;
 };
 
 } // namespace sponge::redis
