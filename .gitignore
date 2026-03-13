@@ -42,7 +42,7 @@ Makefile.in
 .idea/
 
 # build
-build/
+build*/
 cmake-build-debug/
 cmake-build-release/
 out/
