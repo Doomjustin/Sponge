@@ -1,11 +1,10 @@
 #ifndef SPONGE_CORE_COMMANDS_H
 #define SPONGE_CORE_COMMANDS_H
 
+#include "spg_core_application_context.h"
 #include <spg_core_database.h>
 #include <spg_core_string_view_hash.h>
 
-#include <cstdint>
-#include <span>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -15,25 +14,19 @@ namespace spg::core {
 class RedisController {
 public:
     using Command = std::vector<std::string_view>;
-    using Handler = void (*)(Database& db, const Command& args, std::string& response);
+    using Handler = boost::asio::awaitable<void> (*)(ApplicationContext& context, const Command& command,
+                                                     std::string& response);
 
-    RedisController();
+    RedisController(ApplicationContext& context, std::size_t id);
 
-    void execute(Database& db, const Command& command, std::string& response);
-
-    static auto instance() -> RedisController&;
+    auto execute(const std::vector<Command>& batch_commands, std::string& response) -> boost::asio::awaitable<void>;
 
 private:
-    enum class Type : std::uint8_t { Read, Write };
+    using Table = std::unordered_map<std::string, Handler, StringViewHash, std::equal_to<>>;
+    static Table handlers_;
 
-    struct Entry {
-        Type type;
-        Handler handler;
-    };
-
-    using Table = std::unordered_map<std::string, Entry, StringViewHash, std::equal_to<>>;
-
-    Table handlers_;
+    std::size_t id_;
+    ApplicationContext& context_;
 };
 
 } // namespace spg::core

@@ -19,12 +19,13 @@ Server::Server(std::string_view address, Port port, Size size)
 
 void Server::start()
 {
-    for (int i = 0; i < context_.io_context_pool.size(); ++i) {
-        auto& context = context_.io_context_pool.get_io_context();
+    for (int i = 0; i < context_.size(); ++i) {
+        auto& context = context_.io_context(i);
         asio::co_spawn(context, listener(context, i), asio::detached);
+        asio::co_spawn(context, timer_task(context, i), asio::detached);
     }
 
-    graceful_stop(context_.io_context_pool.get_io_context());
+    graceful_stop(context_.io_context(0));
 }
 
 void Server::graceful_stop(asio::io_context& context)
@@ -48,8 +49,6 @@ auto Server::listener(boost::asio::io_context& context, Size id) -> boost::asio:
     using Endpoint = asio::ip::tcp::endpoint;
     using Resolver = asio::ip::tcp::resolver;
 
-    spg::core::Database db_shard{};
-
     Resolver resolver{ context };
     Endpoint endpoint = *resolver.resolve(address_, std::to_string(port_)).begin();
 
@@ -63,14 +62,32 @@ auto Server::listener(boost::asio::io_context& context, Size id) -> boost::asio:
 
     while (true) {
         auto socket = co_await acceptor.async_accept(asio::use_awaitable);
-        asio::co_spawn(context, do_session(std::move(socket), db_shard, id), asio::detached);
+        asio::co_spawn(context, do_session(std::move(socket), id), asio::detached);
     }
 }
 
-auto Server::do_session(Socket socket, Database& shard, Size id) -> boost::asio::awaitable<void>
+auto Server::do_session(Socket socket, Size id) -> boost::asio::awaitable<void>
 {
     spg::core::Session session{ std::move(socket), context_, id };
     co_await session.work();
+}
+
+auto Server::timer_task(boost::asio::io_context& context, Size id) -> boost::asio::awaitable<void>
+{
+    asio::steady_timer timer{ context };
+    constexpr auto TIMEOUT = Database::TICK_INTERVAL;
+
+    try {
+        while (true) {
+            timer.expires_after(TIMEOUT);
+            co_await timer.async_wait(asio::use_awaitable);
+            context_.db(id).tick();
+        }
+    }
+    catch (const boost::system::system_error& e) {
+        if (e.code() != boost::asio::error::operation_aborted)
+            std::println("Cleanup timer error: {}", e.what());
+    }
 }
 
 } // namespace spg::core

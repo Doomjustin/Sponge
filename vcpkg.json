@@ -9,7 +9,8 @@
         "nlohmann-json",
         "tomlplusplus",
         "magic-enum",
-        "argparse"
+        "argparse",
+        "ms-gsl"
     ],
     "name": "sponge",
     "version": "0.0.1",

@@ -49,7 +49,7 @@ auto Session::reader() -> boost::asio::awaitable<void>
             auto& active_buffer = buffers_[active_index];
 
             // 贪婪读
-            int read_budget = 4;
+            int read_budget = 8;
             while (read_budget-- > 0) {
                 deadline_ = Clock::now() + TIMEOUT;
 
@@ -68,12 +68,18 @@ auto Session::reader() -> boost::asio::awaitable<void>
             if (commands.empty())
                 continue;
 
-            // 交换buffer
+            // 交换buffer，避免拿到当前仍在使用的buffer索引
             auto next_index = co_await free_channel_.async_receive(asio::use_awaitable);
+            while (next_index == active_index) {
+                co_await free_channel_.async_send(ErrorCode{}, next_index, asio::use_awaitable);
+                next_index = co_await free_channel_.async_receive(asio::use_awaitable);
+            }
+
             auto& next_buffer = buffers_[next_index];
             auto leftover_bytes = active_buffer.size() - consumed_bytes;
             if (leftover_bytes > 0) {
-                const char* leftover_data = static_cast<const char*>(active_buffer.data().data()) + consumed_bytes;
+                auto active_data = active_buffer.data();
+                const char* leftover_data = static_cast<const char*>(active_data.data()) + consumed_bytes;
                 // 将剩余的半包数据移动到下一个buffer的开头
                 boost::asio::buffer_copy(next_buffer.prepare(leftover_bytes),
                                          asio::buffer(leftover_data, leftover_bytes));
@@ -99,9 +105,16 @@ auto Session::writer() -> boost::asio::awaitable<void>
 {
     try {
         std::string response;
+        response.reserve(1024 * 1024 * 1024); // 预留一些空间，避免每次append都扩容
         while (true) {
             auto [batch_commands, index] = co_await ready_channel_.async_receive(asio::use_awaitable);
-            co_await execute_pipeline(batch_commands, response);
+
+            // 处理命令的结果会写到response里，最后一次性写回客户端
+            co_await redis_controller_.execute(batch_commands, response);
+
+            // for test
+            // for (Size i = 0; i < batch_commands.size(); ++i)
+            //     response.append("+OK\r\n"); // --- IGNORE ---
 
             // 这个buffer之前是reader在用的，现在已经处理完了，可以重置了
             buffers_[index].consume(buffers_[index].size());
@@ -137,60 +150,4 @@ auto Session::watchdog() -> asio::awaitable<void>
     }
 }
 
-auto Session::execute_pipeline(std::vector<std::vector<std::string_view>>& commands, std::string& response)
-    -> boost::asio::awaitable<void>
-{
-    if (commands.empty())
-        co_return;
-
-    std::vector<std::string> results(commands.size());
-    auto coro_num = context_.io_context_pool.size();
-    std::vector<std::vector<std::size_t>> tasks(coro_num); // 每个协程负责执行哪些命令
-
-    for (Size i = 0; i < commands.size(); ++i) {
-        const auto& cmd = commands[i];
-
-        if (cmd.size() < 2) {
-            tasks[id_].push_back(i);
-        }
-        else {
-            auto target_coro_id = std::hash<std::string_view>{}(cmd[1]) % coro_num;
-            tasks[target_coro_id].push_back(i);
-        }
-    }
-
-    Size active_coro_num = 0;
-    for (const auto& task : tasks)
-        if (!task.empty())
-            ++active_coro_num;
-
-    asio::experimental::channel<void(ErrorCode)> barrier{ io_context(), active_coro_num };
-
-    for (Size i = 0; i < coro_num; ++i) {
-        if (tasks[i].empty())
-            continue;
-
-        auto execute_commands = [&commands, &results, &barrier, this, target = i,
-                                 indices = std::move(tasks[i])] -> boost::asio::awaitable<void> {
-            if (target != id_)
-                co_await boost::asio::post(io_context(target), asio::use_awaitable);
-
-            for (size_t idx : indices)
-                RedisController::instance().execute(shard(target), commands[idx], results[idx]);
-
-            if (target != id_)
-                co_await boost::asio::post(io_context(id_), asio::use_awaitable);
-
-            barrier.try_send(ErrorCode{});
-        };
-
-        boost::asio::co_spawn(io_context(), execute_commands, asio::detached);
-    }
-
-    for (size_t i = 0; i < active_coro_num; ++i)
-        co_await barrier.async_receive(asio::use_awaitable);
-
-    for (const auto& res : results)
-        response.append(res);
-}
 } // namespace spg::core

@@ -14,6 +14,7 @@ target_link_libraries(sponge_core
     PUBLIC 
         Boost::asio 
         Boost::beast
+        Microsoft.GSL::GSL
         sponge::base
         uring
 )

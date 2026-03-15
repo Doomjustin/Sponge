@@ -30,7 +30,9 @@ private:
 
     auto listener(boost::asio::io_context& context, Size id) -> boost::asio::awaitable<void>;
 
-    auto do_session(Socket socket, Database& shard, Size id) -> boost::asio::awaitable<void>;
+    auto do_session(Socket socket, Size id) -> boost::asio::awaitable<void>;
+
+    auto timer_task(boost::asio::io_context& context, Size id) -> boost::asio::awaitable<void>;
 };
 
 } // namespace spg::core

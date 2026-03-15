@@ -15,31 +15,45 @@ auto find_crlf(const char* start, const char* end) -> const char*
     return (pos == std::string_view::npos) ? nullptr : (start + pos);
 }
 
+struct BulkParseResult {
+    bool partial = false;
+    std::string_view value;
+    const char* next = nullptr;
+};
+
 // expected: $3\r\nSET\r\n$5\r\nmykey\r\n$7\r\nmyvalue\r\n
-auto parse_bulk_string(const char* begin, const char* const end) -> std::string_view
+auto parse_bulk_string(const char* begin, const char* const end) -> BulkParseResult
 {
     if (begin >= end)
-        return {}; // 半包：连头部都没有
+        return { .partial = true }; // 半包：连头部都没有
 
     if (*begin != '$')
         throw std::runtime_error{ "Malformed RESP bulk string header" };
 
     const auto* crlf = find_crlf(begin, end);
     if (!crlf)
-        return {}; // 半包：$N 后面的 \r\n 还没到
+        return { .partial = true }; // 半包：$N 后面的 \r\n 还没到
 
     int bulk_len;
     auto [p, ec] = std::from_chars(begin + 1, crlf, bulk_len);
-    if (ec != std::errc() || bulk_len < 0)
+    if (ec != std::errc() || p != crlf || bulk_len < 0)
         throw std::runtime_error{ "Malformed RESP bulk string header" };
 
-    begin = crlf + 2; // 跳过CRLF
+    const auto* payload = crlf + 2; // 跳过CRLF
 
     // 这是一个半包的情况，等待下一次数据到来
-    if (end - begin < bulk_len + 2)
-        return {};
+    if (end - payload < bulk_len + 2)
+        return { .partial = true };
 
-    return std::string_view{ begin, static_cast<std::size_t>(bulk_len) };
+    const auto* value_end = payload + bulk_len;
+    if (value_end[0] != '\r' || value_end[1] != '\n')
+        throw std::runtime_error{ "Malformed RESP bulk string body" };
+
+    return BulkParseResult{
+        .partial = false,
+        .value = std::string_view{ payload, static_cast<std::size_t>(bulk_len) },
+        .next = value_end + 2,
+    };
 }
 
 // expected: *3\r\n$3\r\nSET\r\n$5\r\nmykey\r\n$7\r\nmyvalue\r\n
@@ -49,22 +63,25 @@ auto parse_array_command(const char* begin, const char* const end) -> Command
 
     assert(*begin == '*');
 
+    const auto* crlf = find_crlf(begin, end);
+    if (!crlf)
+        return {}; // 半包：*N 后面的 \r\n 还没到
+
     int argc = 0;
-    // 跳过*
-    auto [p, ec] = std::from_chars(begin + 1, end, argc);
-    if (ec != std::errc() || argc <= 0)
+    auto [p, ec] = std::from_chars(begin + 1, crlf, argc);
+    if (ec != std::errc() || p != crlf || argc <= 0)
         throw std::runtime_error{ "Malformed RESP array header" };
 
-    begin = p + 2; // 跳过CRLF
+    begin = crlf + 2; // 跳过CRLF
 
     for (int i = 0; i < argc; ++i) {
-        auto bulk_string = parse_bulk_string(begin, end);
+        auto bulk = parse_bulk_string(begin, end);
         // 如果是半包，结束当前解析，等待下一次数据到来
-        if (bulk_string.empty())
+        if (bulk.partial)
             return {};
 
-        command.emplace_back(bulk_string);
-        begin = bulk_string.data() + bulk_string.size() + 2; // 跳过数据和CRLF
+        command.emplace_back(bulk.value);
+        begin = bulk.next;
     }
 
     return command;

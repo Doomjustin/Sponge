@@ -32,3 +32,6 @@ target_link_libraries(sponge-server
         sponge::redis 
         Boost::asio
 )
+
+add_compile_options(-fsanitize=address -g -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address)

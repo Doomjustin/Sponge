@@ -30,7 +30,7 @@ IncludeCategories:
     CaseSensitive: false
   
   # 知名第三方库头文件
-  - Regex: '^<(boost|eigen|opencv|qt|gtk|glib|json|yaml|protobuf|grpc|curl|openssl|sqlite|mysql|postgresql|mongo|redis|kafka|aws|azure|google)/'
+  - Regex: '^<(gsl|boost|eigen|opencv|qt|gtk|glib|json|yaml|protobuf|grpc|curl|openssl|sqlite|mysql|postgresql|mongo|redis|kafka|aws|azure|google)/'
     Priority: 2
     CaseSensitive: false
     
