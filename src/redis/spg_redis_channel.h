@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <memory>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 template<typename Executor, typename Func>
 using ConcurrentChannel = boost::asio::experimental::concurrent_channel<Executor, Func>;
@@ -32,6 +32,6 @@ struct Request {
 
 using RequestChannel = ConcurrentChannel<AnyExecutor, void(ErrorCode, Request)>;
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_CHANNEL_H

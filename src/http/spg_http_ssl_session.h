@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 
-namespace sponge::http {
+namespace spg::http {
 
 class SSLSession {
 public:
@@ -24,6 +24,6 @@ private:
     SSLSocket socket_;
 };
 
-} // namespace sponge::http
+} // namespace spg::http
 
 #endif // SPONGE_HTTP_SSL_SESSION_H

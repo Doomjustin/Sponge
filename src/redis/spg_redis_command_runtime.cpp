@@ -7,7 +7,7 @@
 
 using namespace boost;
 
-namespace sponge::redis {
+namespace spg::redis {
 
 CommandRuntime::CommandRuntime()
 {
@@ -37,4 +37,4 @@ auto CommandRuntime::Shard::do_command() -> boost::asio::awaitable<void>
     }
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

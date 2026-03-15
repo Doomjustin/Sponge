@@ -3,9 +3,9 @@
 #include <spg_base_utility.h>
 #include <spg_redis_alias.h>
 
-using namespace sponge::base;
+using namespace spg::base;
 
-namespace sponge::redis {
+namespace spg::redis {
 
 auto set_with_expiry(Database& db, Commands args) -> Reply
 {
@@ -49,4 +49,4 @@ auto string_commands::get(Database& db, Commands commands) -> Reply
     return wrong_type_error;
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

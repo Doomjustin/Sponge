@@ -1,4 +1,5 @@
 add_subdirectory(base)
+add_subdirectory(core)
 # add_subdirectory(http)
 add_subdirectory(redis)
 
@@ -9,6 +10,7 @@ if(${PROJECT_NAME}_BUILD_TESTS)
     target_link_libraries(sponge.test
         PRIVATE
             $<LINK_LIBRARY:WHOLE_ARCHIVE,sponge::base>
+            $<LINK_LIBRARY:WHOLE_ARCHIVE,sponge::core>
             # $<LINK_LIBRARY:WHOLE_ARCHIVE,sponge::http>
             $<LINK_LIBRARY:WHOLE_ARCHIVE,sponge::redis>
             doctest::doctest
@@ -21,3 +23,12 @@ endif()
 
 add_executable(sponge-redis-server redis_server.cpp)
 target_link_libraries(sponge-redis-server PUBLIC sponge::redis)
+
+add_executable(sponge-server sponge_server.cpp)
+target_link_libraries(sponge-server 
+    PUBLIC 
+        sponge::base 
+        sponge::core
+        sponge::redis 
+        Boost::asio
+)

@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sponge::http {
+namespace spg::http {
 
 class HttpServer {
 public:
@@ -42,6 +42,6 @@ private:
     auto do_session(Socket socket) -> boost::asio::awaitable<void>;
 };
 
-} // namespace sponge::http
+} // namespace spg::http
 
 #endif // SPONGE_HTTP_SERVER_H

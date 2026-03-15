@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 class Server {
 public:
@@ -45,6 +45,6 @@ private:
     auto do_session(Socket socket) -> boost::asio::awaitable<void>;
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_SERVER_H

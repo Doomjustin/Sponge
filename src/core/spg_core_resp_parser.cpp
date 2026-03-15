@@ -1,0 +1,105 @@
+#include "spg_core_resp_parser.h"
+
+#include <cassert>
+#include <charconv>
+#include <cstddef>
+#include <stdexcept>
+#include <string_view>
+
+namespace spg::core {
+
+auto find_crlf(const char* start, const char* end) -> const char*
+{
+    std::string_view view{ start, static_cast<std::size_t>(end - start) };
+    auto pos = view.find("\r\n");
+    return (pos == std::string_view::npos) ? nullptr : (start + pos);
+}
+
+// expected: $3\r\nSET\r\n$5\r\nmykey\r\n$7\r\nmyvalue\r\n
+auto parse_bulk_string(const char* begin, const char* const end) -> std::string_view
+{
+    if (begin >= end)
+        return {}; // 半包：连头部都没有
+
+    if (*begin != '$')
+        throw std::runtime_error{ "Malformed RESP bulk string header" };
+
+    const auto* crlf = find_crlf(begin, end);
+    if (!crlf)
+        return {}; // 半包：$N 后面的 \r\n 还没到
+
+    int bulk_len;
+    auto [p, ec] = std::from_chars(begin + 1, crlf, bulk_len);
+    if (ec != std::errc() || bulk_len < 0)
+        throw std::runtime_error{ "Malformed RESP bulk string header" };
+
+    begin = crlf + 2; // 跳过CRLF
+
+    // 这是一个半包的情况，等待下一次数据到来
+    if (end - begin < bulk_len + 2)
+        return {};
+
+    return std::string_view{ begin, static_cast<std::size_t>(bulk_len) };
+}
+
+// expected: *3\r\n$3\r\nSET\r\n$5\r\nmykey\r\n$7\r\nmyvalue\r\n
+auto parse_array_command(const char* begin, const char* const end) -> Command
+{
+    Command command;
+
+    assert(*begin == '*');
+
+    int argc = 0;
+    // 跳过*
+    auto [p, ec] = std::from_chars(begin + 1, end, argc);
+    if (ec != std::errc() || argc <= 0)
+        throw std::runtime_error{ "Malformed RESP array header" };
+
+    begin = p + 2; // 跳过CRLF
+
+    for (int i = 0; i < argc; ++i) {
+        auto bulk_string = parse_bulk_string(begin, end);
+        // 如果是半包，结束当前解析，等待下一次数据到来
+        if (bulk_string.empty())
+            return {};
+
+        command.emplace_back(bulk_string);
+        begin = bulk_string.data() + bulk_string.size() + 2; // 跳过数据和CRLF
+    }
+
+    return command;
+}
+
+auto parse_resp_batch(std::string_view buffer) -> ParseResult
+{
+    ParseResult result;
+    const auto* ptr = buffer.data();
+    const auto* const end = buffer.data() + buffer.size();
+
+    while (ptr < end) {
+        if (*ptr == '*') {
+            auto command = parse_array_command(ptr, end);
+
+            if (command.empty())
+                break;
+
+            auto last_command = command.back();
+            ptr = last_command.data() + last_command.size() + 2; // 跳过最后一个参数的CRLF
+
+            result.commands.push_back(std::move(command));
+            result.consumed_bytes = static_cast<std::size_t>(ptr - buffer.data());
+        }
+        else {
+            // 如果不是*开头，说明协议就错了，直接丢弃这个包
+            const auto* crlf = find_crlf(ptr, end);
+            if (!crlf)
+                break;
+
+            ptr = crlf + 2; // 跳过CRLF
+        }
+    }
+
+    return result;
+}
+
+} // namespace spg::core

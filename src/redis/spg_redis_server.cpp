@@ -7,7 +7,7 @@
 
 using namespace boost;
 
-namespace sponge::redis {
+namespace spg::redis {
 
 Server::Server(std::string_view address, Port port)
 {
@@ -42,4 +42,4 @@ auto Server::do_session(Socket socket) -> asio::awaitable<void>
     co_await session.run();
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

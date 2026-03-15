@@ -5,7 +5,7 @@
 #include <spg_redis_database.h>
 #include <spg_redis_reply.h>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 struct string_commands {
     string_commands() = delete;
@@ -24,6 +24,6 @@ struct string_commands {
     static auto get(Database& db, Commands commands) -> Reply;
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_COMMAND_STRING_H

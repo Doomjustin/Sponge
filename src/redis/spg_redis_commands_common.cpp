@@ -3,7 +3,7 @@
 #include <spg_base_utility.h>
 #include <spg_redis_alias.h>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 auto common_commands::ping(Database& db, Commands commands) -> Reply
 {
@@ -151,4 +151,4 @@ auto common_commands::exists(Database& db, Commands commands) -> Reply
     return count;
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

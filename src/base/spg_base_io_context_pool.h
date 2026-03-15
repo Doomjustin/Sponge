@@ -10,7 +10,7 @@
 #include <thread>
 #include <vector>
 
-namespace sponge::base {
+namespace spg::base {
 
 class IOContextPool {
 public:
@@ -30,6 +30,14 @@ public:
 
     auto get_io_context() -> Context&;
 
+    [[nodiscard]]
+    constexpr auto size() const noexcept -> Size
+    {
+        return io_contexts_.size();
+    }
+
+    auto operator[](Size index) -> Context& { return *io_contexts_[index]; }
+
 private:
     std::vector<ContextPtr> io_contexts_;
     std::vector<std::jthread> threads_;
@@ -37,6 +45,6 @@ private:
     Size next_io_context_ = 0;
 };
 
-} // namespace sponge::base
+} // namespace spg::base
 
 #endif // SPONGE_BASE_IO_CONTEXT_POOL_H

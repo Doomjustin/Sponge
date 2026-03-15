@@ -7,7 +7,7 @@
 
 using namespace boost::asio;
 
-namespace sponge::http {
+namespace spg::http {
 
 HttpServer::HttpServer(const Config& config)
     : ssl_context_{ config.ssl.enable_tls_v13 ? ssl::context::tlsv13_server : ssl::context::tlsv12_server }
@@ -52,4 +52,4 @@ auto HttpServer::do_session(Socket socket) -> boost::asio::awaitable<void>
     co_await session.run();
 }
 
-} // namespace sponge::http
+} // namespace spg::http

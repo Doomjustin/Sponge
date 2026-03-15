@@ -7,7 +7,7 @@
 
 namespace {
 
-using namespace sponge::redis;
+using namespace spg::redis;
 
 constexpr std::string_view FOOTER = "\r\n";
 
@@ -43,7 +43,7 @@ auto read_integral(std::span<const char>& buf) -> std::expected<long, Status>
 
 } // namespace
 
-namespace sponge::redis {
+namespace spg::redis {
 
 auto RESPParser::parse(std::span<const char>& buf) -> std::expected<arguments, Status>
 {
@@ -152,4 +152,4 @@ auto RESPParser::reset() -> void
     args_.clear();
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

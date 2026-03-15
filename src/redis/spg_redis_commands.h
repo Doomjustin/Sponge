@@ -8,7 +8,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/experimental/concurrent_channel.hpp>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 struct commands {
     commands() = delete;
@@ -16,6 +16,6 @@ struct commands {
     static auto dispatch(Database& db, Commands command) -> Reply;
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_COMMANDS_H

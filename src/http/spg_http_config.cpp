@@ -2,7 +2,7 @@
 
 #include <toml++/toml.h>
 
-namespace sponge::http {
+namespace spg::http {
 
 auto parse_from_file(std::string_view path) -> Config
 {
@@ -34,4 +34,4 @@ auto parse_from_file(std::string_view path) -> Config
     return config;
 }
 
-} // namespace sponge::http
+} // namespace spg::http

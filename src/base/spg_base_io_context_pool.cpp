@@ -8,7 +8,7 @@
 
 using namespace boost::asio;
 
-namespace sponge::base {
+namespace spg::base {
 
 IOContextPool::IOContextPool(Size size)
 {
@@ -42,4 +42,4 @@ auto IOContextPool::get_io_context() -> Context&
     return context;
 }
 
-} // namespace sponge::base
+} // namespace spg::base

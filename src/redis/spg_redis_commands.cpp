@@ -8,7 +8,7 @@
 
 namespace {
 
-using namespace sponge::redis;
+using namespace spg::redis;
 
 enum class Type : std::uint8_t { Read, Write };
 
@@ -46,7 +46,7 @@ CommandRegistry commands_registry = {
 
 } // namespace
 
-namespace sponge::redis {
+namespace spg::redis {
 
 auto commands::dispatch(Database& db, Commands commands) -> Reply
 {
@@ -69,4 +69,4 @@ auto commands::dispatch(Database& db, Commands commands) -> Reply
     return it->second.handler(db, commands);
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

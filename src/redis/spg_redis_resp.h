@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 enum class Status : std::uint8_t {
     Waiting, // 数据不够，等待更多数据
@@ -43,6 +43,6 @@ private:
     auto parse_reading_bulk_data(std::span<const char>& buf) -> std::expected<void, Status>;
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_RESP_H

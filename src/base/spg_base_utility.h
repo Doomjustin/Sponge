@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-namespace sponge::base {
+namespace spg::base {
 
 template<typename T>
 auto numeric_cast(std::string_view str) -> std::optional<T>
@@ -36,6 +36,6 @@ public:
     static auto split(std::string_view str, std::string_view delimeter) -> std::vector<std::string>;
 };
 
-} // namespace sponge::base
+} // namespace spg::base
 
 #endif // SPONGE_BASE_UTILITY_H

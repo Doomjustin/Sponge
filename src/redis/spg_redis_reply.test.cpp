@@ -4,7 +4,7 @@
 
 #include <boost/asio/buffer.hpp>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 namespace {
 
@@ -47,4 +47,4 @@ TEST_CASE("WriteContext serializes db string pointers as bulk strings")
     CHECK(flatten_buffers(ctx.buffers()) == "$5\r\nhello\r\n$5\r\nworld\r\n");
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

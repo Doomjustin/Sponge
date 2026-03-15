@@ -10,7 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <variant>
-namespace sponge::redis {
+namespace spg::redis {
 
 class Database {
 public:
@@ -23,6 +23,8 @@ public:
     using Value = std::variant<StringPointer, Hash, List>;
     using Size = std::size_t;
     using Seconds = std::uint64_t;
+
+    Database();
 
     template<typename T>
     static constexpr auto is_valid_value =
@@ -154,6 +156,6 @@ private:
     void erase_expire(std::string_view key);
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_DATABASE_H

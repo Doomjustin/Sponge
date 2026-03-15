@@ -1,5 +1,5 @@
 #include "spg_redis_alias.h"
 
-namespace sponge::redis {
+namespace spg::redis {
 
-} // namespace sponge::redis
+} // namespace spg::redis

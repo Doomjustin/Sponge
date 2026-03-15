@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-using sponge::base::full_path;
+using spg::base::full_path;
 
 TEST_SUITE("full_path")
 {

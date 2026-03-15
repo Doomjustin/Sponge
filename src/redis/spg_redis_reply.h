@@ -15,7 +15,7 @@
 #include <variant>
 #include <vector>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 struct Reply;
 
@@ -125,6 +125,6 @@ private:
         }
     }
 };
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_REPLY_H

@@ -2,7 +2,13 @@
 
 #include <thread>
 
-namespace sponge::redis {
+namespace spg::redis {
+
+Database::Database()
+{
+    data_.max_load_factor(0.25); // 负载因子越小，hash冲突越少，性能越好（但内存占用更多）
+    data_.reserve(1024 * 1024);
+}
 
 auto Database::get(const Key& key) -> std::optional<Value>
 {
@@ -146,4 +152,4 @@ void Database::erase_expire(std::string_view key)
         expires_.erase(it);
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

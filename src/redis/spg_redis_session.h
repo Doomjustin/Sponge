@@ -13,7 +13,7 @@
 #include <memory>
 #include <vector>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 class Session {
 public:
@@ -51,6 +51,6 @@ private:
     auto select(std::span<std::string> args) -> Reply;
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_SESSION_H

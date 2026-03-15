@@ -1,6 +1,6 @@
 #include "spg_base_file.h"
 
-namespace sponge::base {
+namespace spg::base {
 
 auto full_path(std::string_view path) -> std::filesystem::path
 {
@@ -12,4 +12,4 @@ auto full_path(std::string_view path) -> std::filesystem::path
     return cwd / p;
 }
 
-} // namespace sponge::base
+} // namespace spg::base

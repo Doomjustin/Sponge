@@ -8,7 +8,7 @@
 
 #include <thread>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 class CommandRuntime {
 public:
@@ -43,6 +43,6 @@ private:
     static auto local_db_index(Index index) -> std::size_t { return index / shard_count; }
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_COMMAND_RUNTIME_H

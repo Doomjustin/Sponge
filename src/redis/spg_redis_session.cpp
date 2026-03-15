@@ -14,7 +14,7 @@
 
 using namespace boost;
 
-namespace sponge::redis {
+namespace spg::redis {
 
 Session::Session(boost::asio::ip::tcp::socket socket, CommandRuntime& runtime)
     : socket_{ std::move(socket) }
@@ -141,4 +141,4 @@ auto Session::select(std::span<std::string> args) -> Reply
     return ok;
 }
 
-} // namespace sponge::redis
+} // namespace spg::redis

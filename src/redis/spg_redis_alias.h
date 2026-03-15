@@ -11,7 +11,7 @@
 #include <string_view>
 #include <vector>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 static constexpr auto use_nothrow_awaitable = boost::asio::as_tuple(boost::asio::use_awaitable);
 
@@ -100,6 +100,6 @@ private:
     std::string content_;
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // SPONGE_REDIS_ALIAS_H

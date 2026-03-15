@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <string>
 
-namespace sponge::http {
+namespace spg::http {
 
 struct Config {
     using Port = std::uint16_t;
@@ -39,6 +39,6 @@ struct Config {
 
 auto parse_from_file(std::string_view path) -> Config;
 
-} // namespace sponge::http
+} // namespace spg::http
 
 #endif // SPONGE_HTTP_CONFIG_H

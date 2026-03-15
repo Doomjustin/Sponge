@@ -5,7 +5,7 @@
 #include <spg_redis_database.h>
 #include <spg_redis_reply.h>
 
-namespace sponge::redis {
+namespace spg::redis {
 
 struct common_commands {
     common_commands() = delete;
@@ -68,6 +68,6 @@ struct common_commands {
     static auto exists(Database& db, Commands commands) -> Reply;
 };
 
-} // namespace sponge::redis
+} // namespace spg::redis
 
 #endif // XIN_REDIS_COMMAND_COMMON_H

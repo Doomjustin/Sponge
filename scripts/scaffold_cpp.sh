@@ -47,13 +47,13 @@ fi
 
 if [[ -z "$ns" ]]; then
   if [[ "$rel_dir" == "src" ]]; then
-    ns="sponge"
+    ns="spg"
   elif [[ "$rel_dir" == src/* ]]; then
     ns_suffix="${rel_dir#src/}"
-    ns="sponge::$(printf "%s" "$ns_suffix" | sed 's|/|::|g')"
+    ns="spg::$(printf "%s" "$ns_suffix" | sed 's|/|::|g')"
   else
-    printf "%s\n" "INFO: target dir '$rel_dir' is not under src, namespace defaults to 'sponge'."
-    ns="sponge"
+    printf "%s\n" "INFO: target dir '$rel_dir' is not under src, namespace defaults to 'spg'."
+    ns="spg"
   fi
 fi
 

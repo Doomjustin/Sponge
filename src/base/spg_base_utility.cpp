@@ -10,7 +10,7 @@ constexpr std::string_view WHITESPACE = " \t\n\r";
 
 } // namespace
 
-namespace sponge::base {
+namespace spg::base {
 
 auto strings::to_lowercase(std::string_view str) -> std::string
 {
@@ -65,4 +65,4 @@ auto strings::split(std::string_view str, std::string_view delimeter) -> std::ve
     return { view.begin(), view.end() };
 }
 
-} // namespace sponge::base
+} // namespace spg::base
